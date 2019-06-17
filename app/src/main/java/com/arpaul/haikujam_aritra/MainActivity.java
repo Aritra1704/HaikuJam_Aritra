@@ -11,6 +11,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.Toolbar;
@@ -56,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private final static int MOVE_RIGHT_CENTRE = 4;
     private final static int CIRCLE_TO_CARD = 5;
 
-    private final static int animationDelay = 500 * 4;
+    private final static int animationDelay = 1000 * 2; //Millis
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,9 +68,10 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         gradientDrawable = new GradientDrawable();
-        gradientDrawable.setCornerRadius(30.0f);
+        gradientDrawable.setCornerRadius(getResources().getDimension(R.dimen.m_15));
         gradientDrawable.setShape(GradientDrawable.RECTANGLE);
-        mParent.setBackground(gradientDrawable);
+        gradientDrawable.setColor(ContextCompat.getColor(this, R.color.colorWhite));
+        card_view.setBackground(gradientDrawable);
 
         mWidth= this.getResources().getDisplayMetrics().widthPixels;
         mHeight= this.getResources().getDisplayMetrics().heightPixels;
@@ -82,7 +84,8 @@ public class MainActivity extends AppCompatActivity {
     public void pressClicked(View view) {
         switch (state) {
             case CARD_TO_CIRCLE:
-                card_view.setRadius(getResources().getDimension(R.dimen.m_150));
+//                card_view.setRadius(getResources().getDimension(R.dimen.m_150));
+                makeCircle();
                 showSmallCircles();
                 state = MOVE_TOP_CENTRE;
                 break;
@@ -105,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
 
             case CIRCLE_TO_CARD:
                 card_view.setRadius(getResources().getDimension(R.dimen.m_15));
-                moveToTop();
+                makeSquare();
 //                state = CARD_TO_CIRCLE;
                 break;
         }
@@ -133,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
         animatorSet.playTogether(fadeInTop, fadeInLeft, fadeInRight);
         animatorSet.start();
     }
-
 
     private void moveTopCenter() {
         ObjectAnimator shiftAnimationY = ObjectAnimator.ofFloat(civTop, "y", mHeight/2);
@@ -170,12 +172,31 @@ public class MainActivity extends AppCompatActivity {
         animatorSet.start();
     }
 
-    private void moveToTop() {
+    private void makeCircle() {
+        ObjectAnimator cornerAnimation =
+                ObjectAnimator.ofFloat(gradientDrawable,
+                        "cornerRadius",
+                        getResources().getDimension(R.dimen.m_15),
+                        getResources().getDimension(R.dimen.m_150));
+
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.setDuration(animationDelay);
+        animatorSet.play(cornerAnimation);
+        animatorSet.start();
+    }
+
+    private void makeSquare() {
+        ObjectAnimator cornerAnimation =
+                ObjectAnimator.ofFloat(gradientDrawable,
+                        "cornerRadius",
+                        getResources().getDimension(R.dimen.m_150),
+                        getResources().getDimension(R.dimen.m_15));
+
         ObjectAnimator shiftAnimationY = ObjectAnimator.ofFloat(card_view, "y", 0 + getResources().getDimension(R.dimen.m_35));
 
         AnimatorSet animatorSet = new AnimatorSet();
         animatorSet.setDuration(animationDelay);
-        animatorSet.play(shiftAnimationY);
+        animatorSet.playTogether(cornerAnimation, shiftAnimationY);
         animatorSet.start();
     }
 }
